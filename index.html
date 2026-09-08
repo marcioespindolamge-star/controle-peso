@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Controle de Peso - Agropecuária Paineira</title>
-<link rel="stylesheet" href="styles.css?v=20260908-1625">
+<link rel="stylesheet" href="styles.css?v=20260908-1630">
 </head>
 <body>
 <header class="topo">
@@ -18,7 +18,7 @@
 <section id="comprador" class="tela hidden"></section>
 <section id="relatorio" class="tela hidden"></section>
 </main>
-<script src="app.js?v=20260908-1625"></script>
+<script src="app.js?v=20260908-1630"></script>
 <script>
 nav=function(){
  const icones=[
@@ -32,5 +32,9 @@ nav=function(){
  etapas.forEach((e,i)=>document.querySelector('#'+e).classList.toggle('hidden',i!==etapa));
 };
 nav();
+window.print=function(){
+ const w=window.open('imprimir.html?v=20260908-1630','_blank');
+ if(!w){location.href='imprimir.html?v=20260908-1630';}
+};
 </script>
 </body></html>
