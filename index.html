@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Controle de Peso - Agropecuária Paineira</title>
-<link rel="stylesheet" href="styles.css?v=20260908-1630">
+<link rel="stylesheet" href="styles.css?v=20260908-1640">
 </head>
 <body>
 <header class="topo">
@@ -28,7 +28,7 @@ nav=function(){
   '<img class="menu-img" src="assets/comprador.svg" alt="Comprador">',
   '<span class="menu-emoji">📄</span>'
  ];
- document.querySelector('#passos').innerHTML=etapas.map((e,i)=>`<button class="${i===etapa?'ativo':''}" onclick="ir(${i})" aria-label="${e}">${icones[i]}</button>`).join('');
+ document.querySelector('#passos').innerHTML=etapas.map((e,i)=>`<button class="${i===etapa?'ativo':''}" onclick="ir(${i})" aria-label="${e}">${icones[i]}<span class="menu-label">${nomes[e]}</span></button>`).join('');
  etapas.forEach((e,i)=>document.querySelector('#'+e).classList.toggle('hidden',i!==etapa));
 };
 nav();
