@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Controle de Peso - Agropecuária Paineira</title>
-<link rel="stylesheet" href="styles.css?v=20260908-0915">
+<link rel="stylesheet" href="styles.css?v=20260908-1225">
 </head>
 <body>
 <header class="topo">
@@ -18,5 +18,19 @@
 <section id="comprador" class="tela hidden"></section>
 <section id="relatorio" class="tela hidden"></section>
 </main>
-<script src="app.js?v=20260908-0915"></script>
+<script src="app.js?v=20260908-1225"></script>
+<script>
+nav=function(){
+ const icones=[
+  '<span class="menu-emoji">⚖️</span>',
+  '<span class="menu-emoji">💰</span>',
+  '<img class="menu-img" src="assets/vendedor.svg" alt="Vendedor">',
+  '<img class="menu-img" src="assets/comprador.svg" alt="Comprador">',
+  '<span class="menu-emoji">📄</span>'
+ ];
+ document.querySelector('#passos').innerHTML=etapas.map((e,i)=>`<button class="${i===etapa?'ativo':''}" onclick="ir(${i})" title="${nomes[e]}" aria-label="${nomes[e]}">${icones[i]}</button>`).join('');
+ etapas.forEach((e,i)=>document.querySelector('#'+e).classList.toggle('hidden',i!==etapa));
+};
+nav();
+</script>
 </body></html>
