@@ -13,7 +13,7 @@
 <div class="acoes no-print"><button class="btn voltar" onclick="window.close();history.back()">← VOLTAR</button><button class="btn imprimir" onclick="window.print()" aria-label="Imprimir">🖨️ IMPRIMIR</button></div>
 <div class="aviso no-print">Se a tela de impressão não abrir automaticamente, toque no botão da impressora acima.</div>
 <script>
-const LOGO_URL='https://raw.githubusercontent.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira.png';
+const LOGO_URL='assets/logo-paineira.jpg?v=20260909-0912';
 const num=v=>Number(String(v??'').replace(',','.'))||0;
 const moeda=v=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 function cpfMask(v){let d=String(v||'').replace(/\D/g,'').slice(0,11);return d.replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2')}
