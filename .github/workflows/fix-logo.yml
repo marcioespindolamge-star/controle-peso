@@ -1,4 +1,4 @@
-name: Corrigir logo local
+name: Atualizar logo oficial
 
 on:
   push:
@@ -9,43 +9,43 @@ permissions:
   contents: write
 
 jobs:
-  corrigir:
+  atualizar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Forcar logo local no cabecalho
+      - name: Baixar logo oficial e aplicar
         run: |
+          set -e
+          mkdir -p assets
+          curl -L --fail --retry 3 'https://raw.githubusercontent.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira.png' -o assets/logo-paineira.png
+          test -s assets/logo-paineira.png
           python - <<'PY'
           from pathlib import Path
           import re
-          versao='20260909-1305'
-          logo=f'assets/logo-paineira.jpg?v={versao}'
+          versao='20260909-1345'
+          logo=f'assets/logo-paineira.png?v={versao}'
           idx=Path('index.html')
           s=idx.read_text(encoding='utf-8')
           s=re.sub(r'data-app-version="[^"]+"',f'data-app-version="{versao}"',s,count=1)
-          # Substitui o src do PRIMEIRO img depois do header topo, sem depender do texto alt.
           pos=s.find('<header class="topo">')
           if pos < 0: raise SystemExit('header topo nao encontrado')
           img=s.find('<img ',pos)
-          if img < 0: raise SystemExit('img do topo nao encontrado')
           fim=s.find('>',img)
           tag=s[img:fim+1]
           nova=re.sub(r'src="[^"]*"',f'src="{logo}"',tag,count=1)
-          if nova==tag: raise SystemExit('src do logo nao substituido')
           s=s[:img]+nova+s[fim+1:]
           s=re.sub(r'auto-update\.js\?v=[^"\']+',f'auto-update.js?v={versao}',s)
           idx.write_text(s,encoding='utf-8')
           Path('version.json').write_text('{"version":"'+versao+'"}\n',encoding='utf-8')
-          print('LOGO_HEADER=',nova[:180])
           PY
-      - name: Verificar antes de publicar
+      - name: Verificar logo
         run: |
-          grep -o 'header class="topo"><img src="[^"]*"' index.html | head -1
-          grep -q 'header class="topo"><img src="assets/logo-paineira.jpg?v=20260909-1305"' index.html
-      - name: Salvar correcao
+          file assets/logo-paineira.png
+          grep -q 'header class="topo"><img src="assets/logo-paineira.png?v=20260909-1345"' index.html
+      - name: Salvar no sistema
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html version.json
-          git diff --cached --quiet || git commit -m "Forca logo local no cabecalho"
+          git add assets/logo-paineira.png index.html version.json
+          git diff --cached --quiet || git commit -m "Adiciona nova logo oficial ao cabecalho"
           git push
