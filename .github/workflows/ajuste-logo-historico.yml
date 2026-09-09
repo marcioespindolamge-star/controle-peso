@@ -1,0 +1,67 @@
+name: Corrigir impressao e historico
+
+on:
+  push:
+    paths:
+      - '.github/workflows/ajuste-logo-historico.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  ajustar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Aplicar ajustes
+        run: |
+          set -e
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          versao='20260909-1815'
+
+          # 1) Impressao: usar a mesma logo oficial do cabecalho.
+          p=Path('imprimir.html')
+          s=p.read_text(encoding='utf-8')
+          s,n=re.subn(r"const LOGO_URL='data:image/[^']+';", f"const LOGO_URL='assets/logo-paineira.png?v={versao}';", s, count=1)
+          if n != 1:
+              raise SystemExit('Nao foi possivel substituir a logo da impressao')
+          p.write_text(s,encoding='utf-8')
+
+          # 2) Historico: botao pequeno, somente simbolo, alinhado a direita.
+          p=Path('historico.js')
+          s=p.read_text(encoding='utf-8')
+          old="b.id='btnHistorico';b.className='btn-historico no-print';b.innerHTML='📚 HISTÓRICO DE RELATÓRIOS';b.onclick=abrirHistorico;"
+          new="b.id='btnHistorico';b.className='btn-historico no-print';b.innerHTML='🕘';b.setAttribute('aria-label','Histórico de relatórios');b.title='Histórico de relatórios';b.onclick=abrirHistorico;"
+          if old not in s:
+              raise SystemExit('Trecho do botao do historico nao encontrado')
+          s=s.replace(old,new,1)
+          s,n=re.subn(r"\.btn-historico\{display:block;margin:0 auto 14px;padding:11px 16px;border:0;border-radius:12px;background:#006b78;color:#fff;font-weight:800;cursor:pointer\}", ".btn-historico{display:flex;margin:0 0 10px auto;width:40px;height:40px;padding:0;border:0;border-radius:11px;background:#006b78;color:#fff;font-size:20px;align-items:center;justify-content:center;font-weight:800;cursor:pointer;box-shadow:0 3px 9px rgba(0,107,120,.18)}", s, count=1)
+          if n != 1:
+              raise SystemExit('CSS do botao do historico nao encontrado')
+          p.write_text(s,encoding='utf-8')
+
+          # 3) Bump de versao/cache sem alterar o funcionamento da impressao.
+          p=Path('index.html')
+          s=p.read_text(encoding='utf-8')
+          s=re.sub(r'data-app-version="[^"]+"', f'data-app-version="{versao}"', s, count=1)
+          s=re.sub(r'imprimir\.html\?v=[^\'\"]+', f'imprimir.html?v={versao}', s)
+          s=re.sub(r'historico\.js\?v=[^\'\"]+', f'historico.js?v={versao}', s)
+          s=re.sub(r'auto-update\.js\?v=[^\'\"]+', f'auto-update.js?v={versao}', s)
+          p.write_text(s,encoding='utf-8')
+          Path('version.json').write_text('{"version":"'+versao+'"}\n',encoding='utf-8')
+          PY
+      - name: Verificar ajustes
+        run: |
+          grep -q "const LOGO_URL='assets/logo-paineira.png?v=20260909-1815';" imprimir.html
+          grep -q "b.innerHTML='🕘'" historico.js
+          grep -q 'data-app-version="20260909-1815"' index.html
+      - name: Publicar alteracoes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add imprimir.html historico.js index.html version.json
+          git diff --cached --quiet || git commit -m "Corrige logo da impressao e botao do historico"
+          git push
