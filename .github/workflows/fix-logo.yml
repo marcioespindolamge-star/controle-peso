@@ -13,39 +13,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Usar logo local no sistema
+      - name: Forcar logo local no cabecalho
         run: |
           python - <<'PY'
           from pathlib import Path
           import re
-
-          versao = '20260909-1245'
-          logo = f'assets/logo-paineira.jpg?v={versao}'
-
-          idx = Path('index.html')
-          s = idx.read_text(encoding='utf-8')
-          s = re.sub(r'data-app-version="[^"]+"', f'data-app-version="{versao}"', s, count=1)
-          # Troca somente a imagem principal do cabeçalho, inclusive se estiver como data URI.
-          s = re.sub(r'(<header class="topo"><img src=")[^"]+(" alt="agropecuária paineira")', r'\1'+logo+r'\2', s, count=1, flags=re.I)
-          s = re.sub(r'auto-update\.js\?v=[^"\']+', f'auto-update.js?v={versao}', s)
-          idx.write_text(s, encoding='utf-8')
-
-          app = Path('app.js')
-          a = app.read_text(encoding='utf-8')
-          a = re.sub(r'const LOGO_URL="[^"]*";', f'const LOGO_URL="{logo}";', a, count=1)
-          app.write_text(a, encoding='utf-8')
-
-          imp = Path('imprimir.html')
-          p = imp.read_text(encoding='utf-8')
-          p = re.sub(r'(?:https://raw\.githubusercontent\.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira\.png|assets/logo-paineira\.jpg(?:\?v=[^"\']*)?)', logo, p)
-          imp.write_text(p, encoding='utf-8')
-
-          Path('version.json').write_text('{"version":"'+versao+'"}\n', encoding='utf-8')
+          versao='20260909-1305'
+          logo=f'assets/logo-paineira.jpg?v={versao}'
+          idx=Path('index.html')
+          s=idx.read_text(encoding='utf-8')
+          s=re.sub(r'data-app-version="[^"]+"',f'data-app-version="{versao}"',s,count=1)
+          # Substitui o src do PRIMEIRO img depois do header topo, sem depender do texto alt.
+          pos=s.find('<header class="topo">')
+          if pos < 0: raise SystemExit('header topo nao encontrado')
+          img=s.find('<img ',pos)
+          if img < 0: raise SystemExit('img do topo nao encontrado')
+          fim=s.find('>',img)
+          tag=s[img:fim+1]
+          nova=re.sub(r'src="[^"]*"',f'src="{logo}"',tag,count=1)
+          if nova==tag: raise SystemExit('src do logo nao substituido')
+          s=s[:img]+nova+s[fim+1:]
+          s=re.sub(r'auto-update\.js\?v=[^"\']+',f'auto-update.js?v={versao}',s)
+          idx.write_text(s,encoding='utf-8')
+          Path('version.json').write_text('{"version":"'+versao+'"}\n',encoding='utf-8')
+          print('LOGO_HEADER=',nova[:180])
           PY
-      - name: Salvar correção
+      - name: Verificar antes de publicar
+        run: |
+          grep -o 'header class="topo"><img src="[^"]*"' index.html | head -1
+          grep -q 'header class="topo"><img src="assets/logo-paineira.jpg?v=20260909-1305"' index.html
+      - name: Salvar correcao
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html app.js imprimir.html version.json
-          git diff --cached --quiet || git commit -m "Usa logo local no cabecalho e relatorios"
+          git add index.html version.json
+          git diff --cached --quiet || git commit -m "Forca logo local no cabecalho"
           git push
