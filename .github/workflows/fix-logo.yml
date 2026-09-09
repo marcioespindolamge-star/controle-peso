@@ -1,0 +1,42 @@
+name: Corrigir logo local
+
+on:
+  push:
+    paths:
+      - '.github/workflows/fix-logo.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  corrigir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corrigir referências e versão
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          idx = Path('index.html')
+          s = idx.read_text(encoding='utf-8')
+          s = s.replace('data-app-version="20260909-0905"','data-app-version="20260909-0920"')
+          s = s.replace('assets/logo-paineira.jpg?v=20260909-0905','assets/logo-paineira.jpg?v=20260909-0920')
+          s = s.replace('app.js?v=20260909-0905','app.js?v=20260909-0920')
+          s = s.replace('auto-update.js?v=20260909-0905','auto-update.js?v=20260909-0920')
+          s = s.replace('imprimir.html?v=20260908-1630','imprimir.html?v=20260909-0912')
+          idx.write_text(s, encoding='utf-8')
+
+          app = Path('app.js')
+          a = app.read_text(encoding='utf-8')
+          a = a.replace('const LOGO_URL="https://raw.githubusercontent.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira.png";', 'const LOGO_URL="assets/logo-paineira.jpg?v=20260909-0920";')
+          app.write_text(a, encoding='utf-8')
+
+          Path('version.json').write_text('{"version":"20260909-0920"}\n', encoding='utf-8')
+          PY
+      - name: Salvar correção
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html app.js version.json
+          git diff --cached --quiet || git commit -m "Corrige logo local e atualiza cache"
+          git push
