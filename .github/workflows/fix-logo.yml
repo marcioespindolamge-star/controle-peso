@@ -13,30 +13,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Corrigir referências e versão
+      - name: Usar logo local no sistema
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
+          versao = '20260909-1245'
+          logo = f'assets/logo-paineira.jpg?v={versao}'
+
           idx = Path('index.html')
           s = idx.read_text(encoding='utf-8')
-          s = s.replace('data-app-version="20260909-0905"','data-app-version="20260909-0920"')
-          s = s.replace('assets/logo-paineira.jpg?v=20260909-0905','assets/logo-paineira.jpg?v=20260909-0920')
-          s = s.replace('app.js?v=20260909-0905','app.js?v=20260909-0920')
-          s = s.replace('auto-update.js?v=20260909-0905','auto-update.js?v=20260909-0920')
-          s = s.replace('imprimir.html?v=20260908-1630','imprimir.html?v=20260909-0912')
+          s = re.sub(r'data-app-version="[^"]+"', f'data-app-version="{versao}"', s, count=1)
+          # Troca somente a imagem principal do cabeçalho, inclusive se estiver como data URI.
+          s = re.sub(r'(<header class="topo"><img src=")[^"]+(" alt="agropecuária paineira")', r'\1'+logo+r'\2', s, count=1, flags=re.I)
+          s = re.sub(r'auto-update\.js\?v=[^"\']+', f'auto-update.js?v={versao}', s)
           idx.write_text(s, encoding='utf-8')
 
           app = Path('app.js')
           a = app.read_text(encoding='utf-8')
-          a = a.replace('const LOGO_URL="https://raw.githubusercontent.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira.png";', 'const LOGO_URL="assets/logo-paineira.jpg?v=20260909-0920";')
+          a = re.sub(r'const LOGO_URL="[^"]*";', f'const LOGO_URL="{logo}";', a, count=1)
           app.write_text(a, encoding='utf-8')
 
-          Path('version.json').write_text('{"version":"20260909-0920"}\n', encoding='utf-8')
+          imp = Path('imprimir.html')
+          p = imp.read_text(encoding='utf-8')
+          p = re.sub(r'(?:https://raw\.githubusercontent\.com/marcioespindolamge-star/caderno-campo/main/assets/logo-paineira\.png|assets/logo-paineira\.jpg(?:\?v=[^"\']*)?)', logo, p)
+          imp.write_text(p, encoding='utf-8')
+
+          Path('version.json').write_text('{"version":"'+versao+'"}\n', encoding='utf-8')
           PY
       - name: Salvar correção
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html app.js version.json
-          git diff --cached --quiet || git commit -m "Corrige logo local e atualiza cache"
+          git add index.html app.js imprimir.html version.json
+          git diff --cached --quiet || git commit -m "Usa logo local no cabecalho e relatorios"
           git push
