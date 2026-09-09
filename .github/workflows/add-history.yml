@@ -1,0 +1,34 @@
+name: Adicionar historico
+on:
+  push:
+    paths:
+      - '.github/workflows/add-history.yml'
+permissions:
+  contents: write
+jobs:
+  aplicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Adicionar historico ao sistema
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          v='20260909-1755'
+          p=Path('index.html'); s=p.read_text(encoding='utf-8')
+          s=re.sub(r'data-app-version="[^"]+"',f'data-app-version="{v}"',s,count=1)
+          if 'historico.js' not in s:
+              s=s.replace('<script src="auto-update.js',f'<script src="historico.js?v={v}"></script><script src="auto-update.js')
+          s=re.sub(r'auto-update\.js\?v=[^"\']+',f'auto-update.js?v={v}',s)
+          p.write_text(s,encoding='utf-8')
+          Path('version.json').write_text('{"version":"'+v+'"}\n',encoding='utf-8')
+          if f'historico.js?v={v}' not in s: raise SystemExit('historico nao inserido')
+          PY
+      - name: Publicar
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html version.json
+          git diff --cached --quiet || git commit -m "Ativa historico de relatorios"
+          git push
