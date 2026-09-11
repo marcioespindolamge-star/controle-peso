@@ -1,0 +1,36 @@
+name: Corrige carregamento da nova logo
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/corrige-logo-jpg.yml'
+permissions:
+  contents: write
+jobs:
+  corrigir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Corrigir extensao e cache da logo
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('assets/logo-paineira.png?v=20260909-1345','assets/logo-paineira.jpg?v=20260911-0855')
+          s=s.replace('data-app-version="20260911-0820"','data-app-version="20260911-0855"')
+          s=s.replace('historico.js?v=20260911-0820','historico.js?v=20260911-0855')
+          s=s.replace('auto-update.js?v=20260911-0820','auto-update.js?v=20260911-0855')
+          p.write_text(s)
+          p=Path('imprimir.html')
+          s=p.read_text().replace("assets/logo-paineira.png?v=20260911-0848","assets/logo-paineira.jpg?v=20260911-0855")
+          p.write_text(s)
+          Path('version.json').write_text('{"version":"20260911-0855"}\n')
+          PY
+      - name: Publicar correcao
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html imprimir.html version.json
+          git commit -m "Corrige logo JPG no programa e impressao" || exit 0
+          git push
