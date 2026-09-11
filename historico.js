@@ -52,8 +52,8 @@ window.carregarHistorico=id=>{
  window.scrollTo({top:0,behavior:'smooth'});
 };
 window.excluirHistorico=id=>{if(!confirm('Excluir este relatório do histórico?'))return;gravar(ler().filter(x=>x.id!==id));abrirHistorico()};
-window.novaPesagem=()=>{
- if(!confirm('Iniciar uma nova pesagem? Os dados atuais serão limpos, mas o histórico continuará salvo.'))return;
+window.limparDados=()=>{
+ if(!confirm('Limpar todos os dados da pesagem atual? O histórico será mantido.'))return;
  estado={
    animais:[],
    rascunho:{brinco:'',peso:'',descricao:''},
@@ -64,18 +64,23 @@ window.novaPesagem=()=>{
  };
  salvar();etapa=0;render();window.scrollTo({top:0,behavior:'smooth'});
 };
-function botoesTopo(){
- const r=document.getElementById('relatorio');if(!r)return;
- let barra=document.getElementById('atalhosRelatorio');
- if(!barra){barra=document.createElement('div');barra.id='atalhosRelatorio';barra.className='atalhos-relatorio no-print';r.insertBefore(barra,r.firstChild)}
- barra.innerHTML='<button class="btn-nova-pesagem" onclick="novaPesagem()">＋ NOVA PESAGEM</button><button id="btnHistorico" class="btn-historico" aria-label="Histórico de relatórios" title="Histórico de relatórios" onclick="abrirHistorico()">🕘</button>';
+function botaoHistorico(){
+ const r=document.getElementById('relatorio');if(!r||document.getElementById('btnHistorico'))return;
+ const b=document.createElement('button');b.id='btnHistorico';b.className='btn-historico no-print';b.innerHTML='🕘';b.setAttribute('aria-label','Histórico de relatórios');b.title='Histórico de relatórios';b.onclick=abrirHistorico;r.insertBefore(b,r.firstChild);
+}
+function botaoLimpar(){
+ const p=document.getElementById('pesagem');if(!p||document.getElementById('btnLimparDados'))return;
+ const b=document.createElement('button');b.id='btnLimparDados';b.className='btn-limpar-dados no-print';b.type='button';b.innerHTML='🗑️ LIMPAR DADOS';b.onclick=limparDados;
+ const h=p.querySelector('h2');h?h.insertAdjacentElement('afterend',b):p.insertBefore(b,p.firstChild);
 }
 const anterior=renderRelatorio;
-renderRelatorio=function(){anterior();if(etapa===4)arquivarAtual();botoesTopo()};
+renderRelatorio=function(){anterior();if(etapa===4)arquivarAtual();botaoHistorico()};
+const renderPesagemBase=renderPesagem;
+renderPesagem=function(){renderPesagemBase();botaoLimpar()};
 const renderVendedorBase=renderVendedor;
 renderVendedor=function(){renderVendedorBase();aplicarMemoria('vendedor')};
 const renderCompradorBase=renderComprador;
 renderComprador=function(){renderCompradorBase();aplicarMemoria('comprador')};
-botoesTopo();aplicarMemoria('vendedor');aplicarMemoria('comprador');
-const css=document.createElement('style');css.textContent=`.atalhos-relatorio{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px}.btn-nova-pesagem{height:40px;padding:0 14px;border:0;border-radius:11px;background:#08745f;color:#fff;font-weight:800;cursor:pointer;box-shadow:0 3px 9px rgba(8,116,95,.18)}.btn-historico{display:flex;margin-left:auto;width:40px;height:40px;padding:0;border:0;border-radius:11px;background:#006b78;color:#fff;font-size:20px;align-items:center;justify-content:center;font-weight:800;cursor:pointer;box-shadow:0 3px 9px rgba(0,107,120,.18)}#historicoRelatorios{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.48);padding:18px;overflow:auto}.hist-card{max-width:760px;margin:25px auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 12px 35px rgba(0,0,0,.25)}.hist-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce8e9;padding-bottom:10px}.hist-top h2{margin:0;color:#075f68;font-size:20px}.hist-top button{border:0;background:#eef5f5;border-radius:9px;width:38px;height:38px;font-size:18px}.hist-lista{display:grid;gap:9px;margin-top:12px}.hist-item{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #d8e5e6;border-radius:13px;padding:12px}.hist-item>div:first-child{display:grid;gap:3px}.hist-item span{font-size:12px;color:#617477}.hist-item strong{color:#08745f}.hist-acoes{display:flex;gap:6px}.hist-acoes button{border:0;border-radius:9px;padding:9px 11px;background:#006b78;color:#fff;font-weight:800}.hist-acoes .excluir{background:#b3261e}.hist-vazio{text-align:center;padding:25px;color:#607477}@media(max-width:600px){.hist-item{align-items:stretch;flex-direction:column}.hist-acoes button{flex:1}.hist-acoes{display:flex}.hist-card{margin:5px auto}.hist-top h2{font-size:17px}.btn-nova-pesagem{font-size:12px;padding:0 11px}}`;document.head.appendChild(css);
+botaoHistorico();botaoLimpar();aplicarMemoria('vendedor');aplicarMemoria('comprador');
+const css=document.createElement('style');css.textContent=`.btn-limpar-dados{display:block;margin:0 0 12px auto;height:38px;padding:0 13px;border:1px solid #b3261e;border-radius:10px;background:#fff;color:#b3261e;font-weight:800;cursor:pointer}.btn-historico{display:flex;margin:0 0 10px auto;width:40px;height:40px;padding:0;border:0;border-radius:11px;background:#006b78;color:#fff;font-size:20px;align-items:center;justify-content:center;font-weight:800;cursor:pointer;box-shadow:0 3px 9px rgba(0,107,120,.18)}#historicoRelatorios{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.48);padding:18px;overflow:auto}.hist-card{max-width:760px;margin:25px auto;background:#fff;border-radius:18px;padding:16px;box-shadow:0 12px 35px rgba(0,0,0,.25)}.hist-top{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #dce8e9;padding-bottom:10px}.hist-top h2{margin:0;color:#075f68;font-size:20px}.hist-top button{border:0;background:#eef5f5;border-radius:9px;width:38px;height:38px;font-size:18px}.hist-lista{display:grid;gap:9px;margin-top:12px}.hist-item{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid #d8e5e6;border-radius:13px;padding:12px}.hist-item>div:first-child{display:grid;gap:3px}.hist-item span{font-size:12px;color:#617477}.hist-item strong{color:#08745f}.hist-acoes{display:flex;gap:6px}.hist-acoes button{border:0;border-radius:9px;padding:9px 11px;background:#006b78;color:#fff;font-weight:800}.hist-acoes .excluir{background:#b3261e}.hist-vazio{text-align:center;padding:25px;color:#607477}@media(max-width:600px){.hist-item{align-items:stretch;flex-direction:column}.hist-acoes button{flex:1}.hist-acoes{display:flex}.hist-card{margin:5px auto}.hist-top h2{font-size:17px}.btn-limpar-dados{font-size:12px;height:36px}}`;document.head.appendChild(css);
 })();
