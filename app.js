@@ -1,6 +1,6 @@
 const etapas=["pesagem","valores","vendedor","comprador","relatorio"];
 const nomes={pesagem:"PESAGEM",valores:"VALORES",vendedor:"VENDEDOR",comprador:"COMPRADOR",relatorio:"RELATÓRIO"};
-const LOGO_URL="assets/logo-paineira.jpg?v=20260909-1245";
+const LOGO_URL="assets/logo-paineira.png?v=20260911-0848";
 const $=s=>document.querySelector(s), num=v=>Number(String(v).replace(",","."))||0, moeda=v=>(Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 let etapa=0;
 let estado=JSON.parse(localStorage.getItem("controlePeso")||"null")||{};
