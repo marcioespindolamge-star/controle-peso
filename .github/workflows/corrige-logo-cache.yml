@@ -1,0 +1,35 @@
+name: Corrige carregamento da nova logo
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/corrige-logo-cache.yml'
+permissions:
+  contents: write
+jobs:
+  corrigir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Atualizar referencias da logo e cache
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('assets/logo-paineira.png?v=20260909-1345','assets/logo-paineira.png?v=20260911-0848')
+          p.write_text(s)
+          p=Path('app.js')
+          s=p.read_text()
+          s=s.replace('assets/logo-paineira.jpg?v=20260909-1245','assets/logo-paineira.png?v=20260911-0848')
+          p.write_text(s)
+          p=Path('imprimir.html')
+          s=p.read_text()
+          s=s.replace("assets/logo-paineira.png?v=20260909-1815","assets/logo-paineira.png?v=20260911-0848")
+          p.write_text(s)
+          PY
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html app.js imprimir.html
+          git commit -m 'Forca carregamento da nova logo' || exit 0
+          git push
