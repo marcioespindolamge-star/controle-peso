@@ -1,0 +1,30 @@
+name: Publica ajuste Fundo Rural
+on:
+  push:
+    paths:
+      - '.github/workflows/bump-fundo-rural.yml'
+permissions:
+  contents: write
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Atualizar versao
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          s=s.replace('data-app-version="20260911-0800"','data-app-version="20260911-0820"')
+          s=s.replace('app.js?v=20260909-1230','app.js?v=20260911-0820')
+          s=s.replace('historico.js?v=20260911-0800','historico.js?v=20260911-0820')
+          s=s.replace('auto-update.js?v=20260911-0800','auto-update.js?v=20260911-0820')
+          p.write_text(s)
+          Path('version.json').write_text('{"version":"20260911-0820"}\n')
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html version.json
+          git commit -m "Atualiza versao 20260911-0820" || exit 0
+          git push
