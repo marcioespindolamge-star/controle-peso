@@ -19,7 +19,18 @@ window.abrirHistorico=function(){
  document.body.appendChild(caixa);
 };
 window.fecharHistorico=()=>document.getElementById('historicoRelatorios')?.remove();
-window.carregarHistorico=id=>{const x=ler().find(r=>r.id===id);if(!x)return;estado=copia(x.dados);salvar();fecharHistorico();ir(4)};
+window.carregarHistorico=id=>{
+ const x=ler().find(r=>r.id===id);if(!x)return;
+ const atual=copia(estado);
+ const etapaAtual=etapa;
+ estado=copia(x.dados);
+ anterior();
+ estado=atual;
+ etapa=4;
+ fecharHistorico();
+ nav();
+ window.scrollTo({top:0,behavior:'smooth'});
+};
 window.excluirHistorico=id=>{if(!confirm('Excluir este relatório do histórico?'))return;gravar(ler().filter(x=>x.id!==id));abrirHistorico()};
 function botao(){const r=document.getElementById('relatorio');if(!r||document.getElementById('btnHistorico'))return;const b=document.createElement('button');b.id='btnHistorico';b.className='btn-historico no-print';b.innerHTML='🕘';b.setAttribute('aria-label','Histórico de relatórios');b.title='Histórico de relatórios';b.onclick=abrirHistorico;r.insertBefore(b,r.firstChild)}
 const anterior=renderRelatorio;renderRelatorio=function(){anterior();if(etapa===4)arquivarAtual();botao()};
